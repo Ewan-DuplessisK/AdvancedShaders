@@ -1,9 +1,12 @@
-Shader "Unlit/CustomTexShader"
+Shader "Unlit/Line"
 {
 	Properties
 	{
 		_Color ("Main Color", Color) = (1,1,1,1)
 		_MainTex("Main Texture", 2D) = "white"{}
+		_Start ("Line offset", float) = 0.1
+		_Width ("Line width", float) = 0.1
+		_Number ("Number of lines", int) = 5
 	}
 	SubShader
 	{
@@ -34,6 +37,9 @@ Shader "Unlit/CustomTexShader"
 
 			uniform sampler2D _MainTex;
 			uniform float4 _MainTex_ST;
+			uniform float _Start;
+			uniform float _Width;
+			uniform int _Number;
 
 			VertexOutput vert(VertexInput v)
 			{
@@ -43,10 +49,22 @@ Shader "Unlit/CustomTexShader"
 				return o;
 			}
 
-			half4 frag(VertexOutput i): COLOR   //half4 will be treated as a color
+			float drawLine(float2 uv, float start, float end)
 			{
-				return tex2D(_MainTex, i.texcoord) * _Color;
+			   if(uv.x > start && uv.x < end)
+			   {
+				   return 1;
+			   }
+			   return 0;
 			}
+
+			half4 frag(VertexOutput i): COLOR  
+			{
+				float4 color = tex2D(_MainTex, i.texcoord) * _Color;
+				if(i.texcoord.x%(_Start+_Width)>0.1) color.a = drawLine(i.texcoord, i.texcoord.x%(_Start+_Width), i.texcoord.x%(_Start+_Width)+_Width);
+				return color;
+			}
+
 		  
 			ENDCG
 		}

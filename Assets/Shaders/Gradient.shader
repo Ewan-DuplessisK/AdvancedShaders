@@ -1,4 +1,4 @@
-Shader "Unlit/CustomTexShader"
+Shader "Unlit/Gradient"
 {
 	Properties
 	{
@@ -43,10 +43,13 @@ Shader "Unlit/CustomTexShader"
 				return o;
 			}
 
-			half4 frag(VertexOutput i): COLOR   //half4 will be treated as a color
+			half4 frag(VertexOutput i): COLOR 
 			{
-				return tex2D(_MainTex, i.texcoord) * _Color;
+				float4 color = tex2D(_MainTex, i.texcoord) * _Color;
+				color.a = i.texcoord.x;
+				return color;
 			}
+
 		  
 			ENDCG
 		}
