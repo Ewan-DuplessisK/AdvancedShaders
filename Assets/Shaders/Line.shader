@@ -2,10 +2,10 @@ Shader "Unlit/Line"
 {
 	Properties
 	{
-		_Color ("Main Color", Color) = (1,1,1,1)
+		_Color ("Main Color", Color) = (1,0,0,1)
+		_SecColor("Secondary Color", Color) = (0,1,0,1)
 		_MainTex("Main Texture", 2D) = "white"{}
 		_Start ("Line offset", float) = 0.1
-		_Width ("Line width", float) = 0.1
 		_Number ("Number of lines", int) = 5
 	}
 	SubShader
@@ -22,6 +22,7 @@ Shader "Unlit/Line"
 			#pragma vertex vert
 			#pragma fragment frag
 			uniform half4 _Color;
+			uniform half4 _SecColor;
 
 			struct VertexInput
 			{
@@ -38,7 +39,6 @@ Shader "Unlit/Line"
 			uniform sampler2D _MainTex;
 			uniform float4 _MainTex_ST;
 			uniform float _Start;
-			uniform float _Width;
 			uniform int _Number;
 
 			VertexOutput vert(VertexInput v)
@@ -49,19 +49,20 @@ Shader "Unlit/Line"
 				return o;
 			}
 
-			float drawLine(float2 uv, float start, float end)
+			half4 drawLine(float2 uv, float lineWidth)
 			{
-			   if(uv.x > start && uv.x < end)
-			   {
-				   return 1;
-			   }
-			   return 0;
+				if(uv.x%(2*lineWidth)<lineWidth || uv.y%(2*lineWidth)<lineWidth){
+					return _Color;
+				}else{
+					return _SecColor;
+				}
 			}
 
 			half4 frag(VertexOutput i): COLOR  
 			{
-				float4 color = tex2D(_MainTex, i.texcoord) * _Color;
-				if(i.texcoord.x%(_Start+_Width)>0.1) color.a = drawLine(i.texcoord, i.texcoord.x%(_Start+_Width), i.texcoord.x%(_Start+_Width)+_Width);
+				float width = (1.0/_Number);
+				float4 color = tex2D(_MainTex, i.texcoord) * drawLine(i.texcoord,width);
+				
 				return color;
 			}
 
